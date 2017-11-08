@@ -30,32 +30,45 @@ class ApplicationSolar : public Application {
   void initializeGeometry();
   void updateView();
   void upload_planet_transforms(planet newPlanet) const;
+  void upload_orbit_transforms() const;
 
+  // initalization mouse
+private:
+	//mouse control
+	bool mouseActive = true;
+	float mouseX = 0;
+	float mouseY = 0;
+	float zoom = 30; // init camera distance
+	float slide = 0;
 
-  // cpu representation of model
-  model_object planet_object;
+	//buffers
+	std::vector<float> star_buffer;
+	std::vector<float> orbit_buffer;
 
+	// cpu representation of model
+	model_object planet_object;
+	model_object star_object;
+	model_object orbit_object;
+ 
+  
 
   //						name, size, rotation speed, distance to origin, has MoonAt index, isMoon
   planet planets[12] = { { "sun",	3.0f, 5.0f, 0.0f,	-1,	false },
 						{ "mercury",0.5f, 1.8f, 5.0f,	-1, false },
 						{ "venus",	1.3f, 1.0f, 10.0f,  -1, false },
 						{ "earth",	2.2f, 1.5f, 15.0f,	 4, false },
-						{ "moon",	0.5f, 6.1f, 3.7f,	-1, true  },
+						{ "moon",	0.5f, 6.1f, 3.7f,	-1, true  },//
 					    { "mars",	2.0f, 2.1f, 20.7f,	-1, false }, 
-					    { "jupiter",1.0f, 2.1f, 25.7f,	 7, false }, 
-						{ "europa", 2.5f, 1.1f, 7.7f,	-1, true  },
+					    { "jupiter",1.0f, 2.5f, 25.7f,	 7, false }, 
+						{ "europa", 0.5f, 6.1f, 1.7f,	-1, true  },//
 						{ "saturn", 2.0f, 3.6f, 30.7f,	-1, false },
-						{ "uranus", 1.5f, 2.1f, 35.7f,	-1, false },
+						{ "uranus", 1.5f, 2.9f, 35.7f,	-1, false },
 						{ "neptune", 1.7f, 1.1f, 40.7f,	-1, false },
-						{ "pluto",	 1.5f, 2.1f, 45.7f,	-1, false } };
+						{ "pluto",	 1.5f, 2.2f, 45.7f,	-1, false } };
 
-  
 
   
 
 };
 
 #endif
-
-

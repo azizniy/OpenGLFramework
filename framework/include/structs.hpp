@@ -45,7 +45,6 @@ struct shader_program {
   std::map<std::string, GLint> u_locs{};
 };
 
-
 // structure of planets
 typedef struct planet {
 	char name[10];
@@ -55,7 +54,6 @@ typedef struct planet {
 	int hasMoonAtIndex;
 	bool isMoon;
 }planet;
-
 
 
 #endif
