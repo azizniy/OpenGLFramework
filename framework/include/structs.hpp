@@ -53,6 +53,9 @@ typedef struct planet {
 	double distanceToOrigin;
 	int hasMoonAtIndex;
 	bool isMoon;
+	float colorR;
+	float colorG;
+	float colorB;
 }planet;
 
 
