@@ -161,8 +161,8 @@ std::vector<glm::fvec3> generate_tangents(tinyobj::mesh_t const& model) {
 	glm::vec3 & v2 = positions[indices[2]];	// v0 = pos[3]
 
 	glm::vec2 & uv0 = texcoords[indices[0]];
-	glm::vec2 & uv1 = texcoords[indices[0]];
-	glm::vec2 & uv2 = texcoords[indices[0]];
+	glm::vec2 & uv1 = texcoords[indices[1]];
+	glm::vec2 & uv2 = texcoords[indices[2]];
 
 	// Edges of the triangle : postion delta
 	glm::vec3 deltaPos1 = v1 - v0; //deltaPos1 = deltaUV1.x * T + deltaUV1.y * B

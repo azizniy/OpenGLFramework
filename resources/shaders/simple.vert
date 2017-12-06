@@ -40,5 +40,5 @@ void main(void)
 	pass_DiffuseColor = DiffuseColor;
 	pass_ShaderMode= ShaderMode;
 	pass_TexCoord = in_Texcoord;
-	pass_Tangent = in_Tangent;
+	pass_Tangent = vec3(vec4(in_Tangent, 1.0) * NormalMatrix);
 }

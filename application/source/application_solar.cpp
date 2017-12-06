@@ -229,12 +229,17 @@ void ApplicationSolar::upload_planet_transforms(int i) const {
 
 	glActiveTexture(GL_TEXTURE0 + i);
 	//glBindTexture(GL_TEXTURE_2D, i); ------
+	int normalMapID = (sizeof(planets) / sizeof(planets[0]));
 	
 	glUseProgram(m_shaders.at("planet").handle);
 	glUniform1i(m_shaders.at("planet").u_locs.at("ColorTex"), i);
-	glUniform1i(m_shaders.at("planet").u_locs.at("NormalMapIndex"), 13);
+	glUniform1i(m_shaders.at("planet").u_locs.at("NormalMapIndex"), normalMapID);
 
-	std::string str1 = newPlanet.name;
+	//add planet rotation on it's axis - const for all except skybox
+	if (str.compare("skybox")) {
+		model_matrix = glm::rotate(model_matrix, float(glfwGetTime() * M_PI / 10), glm::fvec3{ 0.0f, 1.0f, 0.0f });
+	}
+
 	if (!str.compare("earth") ) {
 		glUniform1f(m_shaders.at("planet").u_locs.at("UseBumpMap"), true);
 	}
@@ -273,13 +278,17 @@ void ApplicationSolar::loadTextures() {
 			newTexture.channels, newTexture.channel_type, newTexture.ptr());
 	}
 	//earth normal map
-	texture_object[13] = 13;
+	
+	int normalMapID = (sizeof(planets)/sizeof(planets[0]));
+	std::cout << normalMapID << std::endl;
+ 	texture_object[normalMapID] = normalMapID;
+
 	newTexture = texture_loader::file(m_resource_path + "textures/earth_normal.png");
 	std::cout << m_resource_path + "textures/earth_normal.tif" << std::endl;
 
-	glActiveTexture(GL_TEXTURE0 + 13);
-	glGenTextures(1, &texture_object[13]);
-	glBindTexture(GL_TEXTURE_2D, texture_object[13]);
+	glActiveTexture(GL_TEXTURE0 + normalMapID);
+	glGenTextures(1, &texture_object[normalMapID]);
+	glBindTexture(GL_TEXTURE_2D, texture_object[normalMapID]);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -353,7 +362,7 @@ void ApplicationSolar::uploadUniforms() {
 
 // handle key input
 void ApplicationSolar::keyCallback(int key, int scancode, int action, int mods) {
-	float speed = .2f;
+	float speed = .5f;
 	
 	if (key == GLFW_KEY_W && action != GLFW_RELEASE) {
 		zoom -= speed;

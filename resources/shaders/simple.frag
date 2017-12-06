@@ -28,42 +28,58 @@ void main() {
   // Texture 
   vec4 color = texture(ColorTex, pass_TexCoord);
  //vec4 color = vec4(pass_DiffuseColor, 1.0);
+ 
+  
+  //normal mapping--------------------------------------------------------------
+  //sample from normal map normal information (in texture space)
   
   vec3 bumpyNormal = normalize(vec3(texture(NormalMapIndex, pass_TexCoord)));
   bumpyNormal = vec3((bumpyNormal.x-0.5)*2.0, (bumpyNormal.y-0.5)*2.0, bumpyNormal.z);
 
-  vec3 viewDir = normalize(-pass_VertexViewPosition);									// V
-  vec3 normal = normalize(pass_Normal); 												// N
-  vec3 lightDir = normalize(pass_LightSourceViewPosition - pass_VertexViewPosition); 	// I
-  vec3 halfDir = normalize(lightDir + viewDir);											// H
   vec3 tangent = normalize(pass_Tangent);
+  vec3 normal = normalize(pass_Normal); 
   
-  //change to texture
-  vec3 baseDiffuseColor = vec3(color);
-  
-  vec3 outLineColor = vec3(0, 0.050, 1);
-  vec3 ambient = ambientK  * baseDiffuseColor;											// Ka*Ia
- 
-  vec3 bitangent = cross(tangent, normal); 
+  vec3 bitangent = cross(tangent, normal);
   mat3 tangentMatrix = transpose(mat3(tangent, bitangent, normal));
   bumpyNormal = bumpyNormal * tangentMatrix;
-  
+   
   if(UseBumpMap){
-   normal = normalize(bumpyNormal);
+    normal = normalize(bumpyNormal);
   }
   else{
-  normal = normalize(pass_Normal);
+	normal = normalize(pass_Normal);
   }
+  
+  //end normal mapping--------------------------------------------------------------
+  
+  vec3 viewDir = normalize(-pass_VertexViewPosition);									// V
+ // vec3 normal = normalize(pass_Normal); 												// N
+  vec3 lightDir = normalize(pass_LightSourceViewPosition - pass_VertexViewPosition); 	// I
+  vec3 halfDir = normalize(lightDir + viewDir);											// H
  
   
+ //colour = colour read from texture
+  vec3 baseDiffuseColor = vec3(color);
+ 
+ //cel shading outline colour:
+  vec3 outLineColor = vec3(0, 0.050, 1);
+
   
-  float specular = 0.0;
+  //AMBIENT part of light
+  vec3 ambient = ambientK  * baseDiffuseColor;											// Ka*Ia
+ 
+ 
+  //DIFFUSE
   float lambertian = max(dot(lightDir,normal), 0.0);									//Lambertian = <Normal, LightDir> 
   vec3 diffuse = diffuseK * baseDiffuseColor * lambertian;								// Kd*Id
+  
+  //SPECULAR
   float specAngle = max(dot(halfDir, normal), 0.0);										//p
   //specular = pow(specAngle, specularK);
-  specular = specularK * pow(specAngle, 10);
+  float specular = specularK * pow(specAngle, 10);
   
+  //combine three lighting components
+  //I = Ka * Ia + Kd * Id * <Normal, LightDir> + Ks * Is * <Halfway, Normal>^4*glossiness
   vec3 colorLinear = ambient + diffuse + specular * specColor;
 
   if(pass_ShaderMode == 1){
@@ -78,6 +94,7 @@ void main() {
 	}
 	else{//cell shading
 		float u_numShades = 6;
+		//round intensities to a limited number of shades
 		vec3 shadeIntensity = round(colorLinear * u_numShades)/ u_numShades;
 		colorLinear.xyz = baseDiffuseColor *shadeIntensity;
 	}

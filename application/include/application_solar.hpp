@@ -65,7 +65,7 @@ private:
 						{ "sun",	3.0f, 1.0f, 0.0f,	-1,	false, 0.9f, 0.7f, 0.2f },
 						{ "mercury",0.5f, 0.8f, 5.0f,	-1, false, 1.0f, 1.0f, 0.0f },
 						{ "venus",	1.3f, 0.2f, 10.0f,  -1, false, 1.0f, 0.0f, 1.0f },
-						{ "earth",	2.2f, 0.0f, 15.0f,	 4, false, 0.0f, 1.0f, 1.0f },
+						{ "earth",	2.2f, 0.1f, 15.0f,	 4, false, 0.0f, 1.0f, 1.0f },
 						{ "moon",	0.5f, 2.1f, 3.7f,	-1, true , 0.0f, 1.0f, 0.0f },//
 					    { "mars",	2.0f, 1.1f, 20.7f,	-1, false, 1.0f, 1.0f, 1.0f },
 					    { "jupiter",1.0f, 1.2f, 25.7f,	 7, false, 0.3f, 0.4f, 1.0f },
