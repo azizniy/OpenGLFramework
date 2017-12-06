@@ -24,7 +24,6 @@ out vec3 pass_VertexViewPosition;
 out vec3 pass_LightSourceViewPosition;
 out vec3 pass_DiffuseColor;
 out float pass_ShaderMode;
-//ass 4
 out vec2 pass_TexCoord;
 out vec3 pass_Tangent;
 
@@ -39,10 +38,7 @@ void main(void)
 	pass_VertexViewPosition = vec3((ViewMatrix * ModelMatrix) * vec4(in_Position, 1.0));
 	pass_LightSourceViewPosition = SunPosition;
 	pass_DiffuseColor = DiffuseColor;
-    
-    //ass 4
-	pass_ShaderMode = ShaderMode;
+	pass_ShaderMode= ShaderMode;
 	pass_TexCoord = in_Texcoord;
-    //convert tangent into view space before passing to frag shader
-	pass_Tangent = vec3(vec4(in_Tangent, 1.0) * NormalMatrix);
+	pass_Tangent = in_Tangent;
 }
