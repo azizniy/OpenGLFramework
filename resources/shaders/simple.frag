@@ -17,9 +17,9 @@ uniform bool UseBumpMap;
 
 out vec4 out_Color;
 
-float ambientK = 0.5;
+float ambientK = 0.3;
 float diffuseK = 0.8;
-float specularK = 1.0;															  //Ks
+float specularK = 0.2;															  //Ks
 
 vec3 specColor = vec3(1.0, 1.0, 1.0);                                             //Is
 
@@ -35,6 +35,8 @@ void main() {
 //normal mapping--------------------------------------------------------------
   //sample from normal map normal information (in texture space)
   vec3 bumpyNormal = normalize(vec3(texture(NormalMapIndex, pass_TexCoord)));
+    
+    
   //translate into tangent space by scaling y and z
   bumpyNormal = vec3((bumpyNormal.x-0.5)*2.0, (bumpyNormal.y-0.5)*2.0, bumpyNormal.z);
     
@@ -77,7 +79,7 @@ void main() {
     //SPECULAR
   float specAngle = max(dot(halfDir, normal), 0.0);										//p
   //specular = pow(specAngle, specularK);
-  float specular = specularK * pow(specAngle, 10);
+  float specular = specularK * pow(specAngle, 3);
   
   //combine three lighting components
   //I = Ka * Ia + Kd * Id * <Normal, LightDir> + Ks * Is * <Halfway, Normal>^4*glossiness
