@@ -5,6 +5,8 @@
 #include "model.hpp"
 #include "structs.hpp"
 
+#define NUM_PLANETS 13
+
 // gpu representation of model
 class ApplicationSolar : public Application {
  public:
@@ -30,8 +32,9 @@ class ApplicationSolar : public Application {
   void initializeShaderPrograms();
   void initializeGeometry();
   void updateView();
-  void upload_planet_transforms(planet newPlanet) const;
+  void upload_planet_transforms(int i) const;
   void upload_orbit_transforms() const;
+  void loadTextures();
   
   // initalization mouse
 private:
@@ -41,6 +44,8 @@ private:
 	float mouseY = 0;
 	float zoom = 30; // init camera distance
 	float slide = 0;
+	GLuint texture_object[NUM_PLANETS+1];
+
 	
 
 	//buffers
@@ -56,10 +61,11 @@ private:
   
 
   //						name, size, rotation speed, distance to origin, has MoonAt index, isMoon, colorRGB
-  planet planets[12] = { { "sun",	3.0f, 5.0f, 0.0f,	-1,	false, 0.9f, 0.7f, 0.2f },
+  planet planets[NUM_PLANETS] = {
+						{ "sun",	3.0f, 1.0f, 0.0f,	-1,	false, 0.9f, 0.7f, 0.2f },
 						{ "mercury",0.5f, 0.8f, 5.0f,	-1, false, 1.0f, 1.0f, 0.0f },
 						{ "venus",	1.3f, 0.2f, 10.0f,  -1, false, 1.0f, 0.0f, 1.0f },
-						{ "earth",	2.2f, 0.5f, 15.0f,	 4, false, 0.0f, 1.0f, 1.0f },
+						{ "earth",	2.2f, 0.0f, 15.0f,	 4, false, 0.0f, 1.0f, 1.0f },
 						{ "moon",	0.5f, 2.1f, 3.7f,	-1, true , 0.0f, 1.0f, 0.0f },//
 					    { "mars",	2.0f, 1.1f, 20.7f,	-1, false, 1.0f, 1.0f, 1.0f },
 					    { "jupiter",1.0f, 1.2f, 25.7f,	 7, false, 0.3f, 0.4f, 1.0f },
@@ -67,7 +73,8 @@ private:
 						{ "saturn", 2.0f, 1.0f, 30.7f,	-1, false, 1.0f, 0.4f, 0.9f },
 						{ "uranus", 1.5f, 0.9f, 35.7f,	-1, false, 0.1f, 0.3f, 0.4f },
 						{ "neptune", 1.7f, 0.1f, 40.7f,	-1, false, 0.4f, 0.2f, 0.9f },
-						{ "pluto",	 1.5f, 1.2f, 45.7f,	-1, false, 0.0f, 1.0f, 0.4f } };
+						{ "pluto",	 1.5f, 1.2f, 45.7f,	-1, false, 0.0f, 1.0f, 0.4f },
+						{ "skybox", 50.0f, 0.0f, 0.0f,	-1, false, 0.0f, 0.0f, 1.0f }};
 
 
   

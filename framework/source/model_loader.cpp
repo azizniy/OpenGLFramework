@@ -116,6 +116,8 @@ void generate_normals(tinyobj::mesh_t& model) {
     normals[model.indices[i]] += normal;
     normals[model.indices[i+1]] += normal;
     normals[model.indices[i+2]] += normal;
+
+
   }
 
   model.normals.reserve(model.positions.size());
@@ -154,16 +156,45 @@ std::vector<glm::fvec3> generate_tangents(tinyobj::mesh_t const& model) {
                            model.indices[i * 3 + 1],
                            model.indices[i * 3 + 2]};
     // access an attribute of xth vert with vector access "attribute[indices[x]]"
-    
+	glm::vec3 & v0 = positions[indices[0]]; // v0 = pos[1]
+	glm::vec3 & v1 = positions[indices[1]];	// v0 = pos[2]
+	glm::vec3 & v2 = positions[indices[2]];	// v0 = pos[3]
+
+	glm::vec2 & uv0 = texcoords[indices[0]];
+	glm::vec2 & uv1 = texcoords[indices[0]];
+	glm::vec2 & uv2 = texcoords[indices[0]];
+
+	// Edges of the triangle : postion delta
+	glm::vec3 deltaPos1 = v1 - v0; //deltaPos1 = deltaUV1.x * T + deltaUV1.y * B
+	glm::vec3 deltaPos2 = v2 - v0; //deltaPos2 = deltaUV2.x * T + deltaUV2.y * B
+
+	// UV delta
+	glm::vec2 deltaUV1 = uv1 - uv0;
+	glm::vec2 deltaUV2 = uv2 - uv0;
+
+
     // calculate tangent for the triangle and add it to the accumulation tangents of the adjacent vertices
+	float r = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x);
+	glm::vec3 tangent = (deltaPos1 * deltaUV2.y - deltaPos2 * deltaUV1.y)*r;
+	glm::vec3 bitangent = (deltaPos2 * deltaUV1.x - deltaPos1 * deltaUV2.x)*r;
     // see generate_normals() for similar workflow 
+	// Set the same tangent for all three vertices of the triangle.
+
+	tangents[indices[0]] = tangent;
+	tangents[indices[1]] = tangent;
+	tangents[indices[2]] = tangent;
+
+
   }
   // normalize and orthogonalize accumulated vertex tangents
   for (unsigned i = 0; i < tangents.size(); ++i) {
     // implement orthogonalization and normalization here
+	  tangents[i] = glm::normalize(tangents[i] - normals[i] * glm::dot(normals[i], tangents[i]));
+	  tangents[i] = normalize(tangents[i]);
+	 // std::cout << tangents.size() << std::endl;
   }
 
-  throw std::logic_error("Tangent creation not implemented yet");
+  //throw std::logic_error("Tangent creation not implemented yet");
 
   return tangents;
 }

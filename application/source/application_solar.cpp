@@ -4,6 +4,7 @@
 #include "utils.hpp"
 #include "shader_loader.hpp"
 #include "model_loader.hpp"
+#include "texture_loader.hpp"
 #include <stdlib.h>
 #include <glbinding/gl/gl.h>
 
@@ -71,7 +72,7 @@ ApplicationSolar::ApplicationSolar(std::string const& resource_path):Application
 		//}
 		
 	}
-	
+  loadTextures();
   initializeGeometry();
   initializeShaderPrograms();
 
@@ -81,12 +82,13 @@ ApplicationSolar::ApplicationSolar(std::string const& resource_path):Application
 void ApplicationSolar::render() const {
   // bind shader to upload uniforms
   
+  
 
   for (int i = 0; i < sizeof(planets) / sizeof(planets[0]); i++) {
 	 
 	  // iterating over planets, that are not moons
 	  if (planets[i].isMoon == false) {
-		  upload_planet_transforms(planets[i]);
+		  upload_planet_transforms(i);
 	  }
   }
 
@@ -153,8 +155,11 @@ void ApplicationSolar::upload_orbit_transforms() const{
 	
 }
 
+
 // Assignment 1
-void ApplicationSolar::upload_planet_transforms(planet newPlanet) const {
+void ApplicationSolar::upload_planet_transforms(int i) const {
+	planet newPlanet = planets[i];
+
 	glUseProgram(m_shaders.at("planet").handle);
 	glm::fmat4 model_matrix = glm::rotate(glm::fmat4{}, float(glfwGetTime() * newPlanet.rotationSpeed), glm::fvec3{ 0.0f, 1.0f, 0.0f });
 	model_matrix = glm::translate(model_matrix, glm::fvec3{ 0.0f, 0.0f, newPlanet.distanceToOrigin });
@@ -179,6 +184,11 @@ void ApplicationSolar::upload_planet_transforms(planet newPlanet) const {
 
 		glm::vec3 planetColor(moon.colorR, moon.colorG, moon.colorB);
 		glUniform3fv(m_shaders.at("planet").u_locs.at("DiffuseColor"), 1, glm::value_ptr(planetColor));
+
+		glActiveTexture(GL_TEXTURE0 + idx);
+		int color_sampler_location = glGetUniformLocation(m_shaders.at("planet").handle, "ColorTex");
+		glUseProgram(m_shaders.at("planet").handle);
+		glUniform1i(color_sampler_location, idx);
 
 		// bind the VAO to draw
 		glBindVertexArray(planet_object.vertex_AO);
@@ -217,12 +227,69 @@ void ApplicationSolar::upload_planet_transforms(planet newPlanet) const {
 	glUniform3fv(m_shaders.at("planet").u_locs.at("SunPosition"), 1, glm::value_ptr(sunPos3));
 	
 
+	glActiveTexture(GL_TEXTURE0 + i);
+	//glBindTexture(GL_TEXTURE_2D, i); ------
+	
+	glUseProgram(m_shaders.at("planet").handle);
+	glUniform1i(m_shaders.at("planet").u_locs.at("ColorTex"), i);
+	glUniform1i(m_shaders.at("planet").u_locs.at("NormalMapIndex"), 13);
+
+	std::string str1 = newPlanet.name;
+	if (!str.compare("earth") ) {
+		glUniform1f(m_shaders.at("planet").u_locs.at("UseBumpMap"), true);
+	}
+	else {
+		glUniform1f(m_shaders.at("planet").u_locs.at("UseBumpMap"), false);
+	}
+	
 
 	// bind the VAO to draw
 	glBindVertexArray(planet_object.vertex_AO);
 
 	// draw bound vertex array using bound shader
 	glDrawElements(planet_object.draw_mode, planet_object.num_elements, model::INDEX.type, NULL);
+
+}
+
+void ApplicationSolar::loadTextures() {
+	pixel_data newTexture;
+	for (int i = 0; i < sizeof(planets)/sizeof(planets[0]); i++) {
+		texture_object[i] = i;
+		newTexture = texture_loader::file(m_resource_path + "textures/" + planets[i].name + ".png");
+		std::cout << m_resource_path + "textures/" + planets[i].name + ".png"<<std::endl;
+
+		glActiveTexture(GL_TEXTURE0 + i);
+		glGenTextures(1, &texture_object[i]);
+		glBindTexture(GL_TEXTURE_2D, texture_object[i]);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		glTexImage2D(GL_TEXTURE_2D,
+			0,
+			GL_RGB,
+			newTexture.width, newTexture.height,
+			0,
+			newTexture.channels, newTexture.channel_type, newTexture.ptr());
+	}
+	//earth normal map
+	texture_object[13] = 13;
+	newTexture = texture_loader::file(m_resource_path + "textures/earth_normal.png");
+	std::cout << m_resource_path + "textures/earth_normal.tif" << std::endl;
+
+	glActiveTexture(GL_TEXTURE0 + 13);
+	glGenTextures(1, &texture_object[13]);
+	glBindTexture(GL_TEXTURE_2D, texture_object[13]);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glTexImage2D(GL_TEXTURE_2D,
+		0,
+		GL_RGB,
+		newTexture.width, newTexture.height,
+		0,
+		newTexture.channels, newTexture.channel_type, newTexture.ptr());
 }
 
 void ApplicationSolar::updateView() {
@@ -271,7 +338,6 @@ void ApplicationSolar::updateProjection() {
   glUniformMatrix4fv(m_shaders.at("orbit").u_locs.at("ProjectionMatrix"),
 	  1, GL_FALSE, glm::value_ptr(m_view_projection));
   glUseProgram(m_shaders.at("orbit").handle);
-
 }
 
 // update uniform locations
@@ -316,6 +382,7 @@ void ApplicationSolar::keyCallback(int key, int scancode, int action, int mods) 
 		updateView();
 	}
 
+
  
 }
 
@@ -344,6 +411,10 @@ void ApplicationSolar::initializeShaderPrograms() {
   m_shaders.at("planet").u_locs["DiffuseColor"] = -1;
   m_shaders.at("planet").u_locs["SunPosition"] = -1;
   m_shaders.at("planet").u_locs["ShaderMode"] = -1;
+  m_shaders.at("planet").u_locs["ColorTex"] = -1;
+  m_shaders.at("planet").u_locs["NormalMapIndex"] = -1;
+  m_shaders.at("planet").u_locs["UseBumpMap"] = -1;
+
 
   // store shader program objects in container
   m_shaders.emplace("star",shader_program{ m_resource_path + "shaders/star.vert", m_resource_path + "shaders/star.frag" });
@@ -362,7 +433,7 @@ void ApplicationSolar::initializeShaderPrograms() {
 
 // load models
 void ApplicationSolar::initializeGeometry() {
-  model planet_model = model_loader::obj(m_resource_path + "models/sphere.obj", model::NORMAL);
+	model planet_model = model_loader::obj(m_resource_path + "models/sphere.obj", model::NORMAL | model::TEXCOORD | model::TANGENT);
 
   // generate vertex array object
   glGenVertexArrays(1, &planet_object.vertex_AO);
@@ -376,14 +447,20 @@ void ApplicationSolar::initializeGeometry() {
   // configure currently bound array buffer
   glBufferData(GL_ARRAY_BUFFER, sizeof(float) * planet_model.data.size(), planet_model.data.data(), GL_STATIC_DRAW);
 
-  // activate first attribute on gpu
+  // activate 1st attribute on gpu
   glEnableVertexAttribArray(0);
   // first attribute is 3 floats with no offset & stride
   glVertexAttribPointer(0, model::POSITION.components, model::POSITION.type, GL_FALSE, planet_model.vertex_bytes, planet_model.offsets[model::POSITION]);
-  // activate second attribute on gpu
+ 
+  // activate 2nd attribute on gpu
   glEnableVertexAttribArray(1);
   // second attribute is 3 floats with no offset & stride
   glVertexAttribPointer(1, model::NORMAL.components, model::NORMAL.type, GL_FALSE, planet_model.vertex_bytes, planet_model.offsets[model::NORMAL]);
+  
+  // activate 3rd attribute on gpu
+  glEnableVertexAttribArray(2);
+  // second attribute is 3 floats with no offset & stride
+  glVertexAttribPointer(2, model::TEXCOORD.components, model::TEXCOORD.type, GL_FALSE, planet_model.vertex_bytes, planet_model.offsets[model::TEXCOORD]);
 
    // generate generic buffer
   glGenBuffers(1, &planet_object.element_BO);
