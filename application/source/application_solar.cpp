@@ -196,15 +196,9 @@ void ApplicationSolar::upload_planet_transforms(int i) const {
 		// draw bound vertex array using bound shader
 		glDrawElements(planet_object.draw_mode, planet_object.num_elements, model::INDEX.type, NULL);
 	}
-    std::string str = newPlanet.name;
 
-    //scale planet
+
 	model_matrix = glm::scale(model_matrix, glm::fvec3{ newPlanet.size, newPlanet.size, newPlanet.size });
-    //add planet rotation on it's axis - const for all except skybox
-    if (str.compare("skybox")) {
-        model_matrix = glm::rotate(model_matrix, float(glfwGetTime() * M_PI / 10), glm::fvec3{ 0.0f, 1.0f, 0.0f });
-    }
-    
 
 	glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("ModelMatrix"),
 		1, GL_FALSE, glm::value_ptr(model_matrix));
@@ -220,7 +214,7 @@ void ApplicationSolar::upload_planet_transforms(int i) const {
 
 	
 	glm::fmat4 view_matrix = glm::inverse(m_view_transform);
-	
+	std::string str = newPlanet.name;
 
 	if (!str.compare("sun")) {// is it si true ---> returns 0
 		origin = glm::vec4{ 0.0, 0.0, 0.0, 0.0 };
@@ -235,13 +229,12 @@ void ApplicationSolar::upload_planet_transforms(int i) const {
 
 	glActiveTexture(GL_TEXTURE0 + i);
 	//glBindTexture(GL_TEXTURE_2D, i); ------
-    
-    int normalMapID = (sizeof(planets) / sizeof(planets[0])) + 1;
 	
 	glUseProgram(m_shaders.at("planet").handle);
 	glUniform1i(m_shaders.at("planet").u_locs.at("ColorTex"), i);
-	glUniform1i(m_shaders.at("planet").u_locs.at("NormalMapIndex"), normalMapID);
+	glUniform1i(m_shaders.at("planet").u_locs.at("NormalMapIndex"), 13);
 
+	std::string str1 = newPlanet.name;
 	if (!str.compare("earth") ) {
 		glUniform1f(m_shaders.at("planet").u_locs.at("UseBumpMap"), true);
 	}
@@ -279,17 +272,14 @@ void ApplicationSolar::loadTextures() {
 			0,
 			newTexture.channels, newTexture.channel_type, newTexture.ptr());
 	}
-	
-    //load earth normal map
-    int normalMapID = (sizeof(planets)/sizeof(planets[0])) + 1;
-	texture_object[normalMapID] = (GLuint)normalMapID;
+	//earth normal map
+	texture_object[13] = 13;
 	newTexture = texture_loader::file(m_resource_path + "textures/earth_normal.png");
-	
-    //std::cout << m_resource_path + "textures/earth_normal.tif" << std::endl;
+	std::cout << m_resource_path + "textures/earth_normal.tif" << std::endl;
 
-	glActiveTexture(GL_TEXTURE0 + normalMapID);
-	glGenTextures(1, &texture_object[normalMapID]);
-	glBindTexture(GL_TEXTURE_2D, texture_object[normalMapID]);
+	glActiveTexture(GL_TEXTURE0 + 13);
+	glGenTextures(1, &texture_object[13]);
+	glBindTexture(GL_TEXTURE_2D, texture_object[13]);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -363,7 +353,7 @@ void ApplicationSolar::uploadUniforms() {
 
 // handle key input
 void ApplicationSolar::keyCallback(int key, int scancode, int action, int mods) {
-	float speed = .5f;
+	float speed = .2f;
 	
 	if (key == GLFW_KEY_W && action != GLFW_RELEASE) {
 		zoom -= speed;
